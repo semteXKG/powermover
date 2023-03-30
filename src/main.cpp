@@ -42,5 +42,4 @@ void setup() {
 
 void loop() {
   shellyManager->update();
-  delay(100);
 }
