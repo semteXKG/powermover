@@ -2,16 +2,17 @@
 #include <WlanHandler.h>
 #include <FastAccelStepper.h>
 #include <ShellyManager.h>
-
-#define enablePinStepper 25
-#define dirPinStepper 26
-#define stepPinStepper 27
+#include <HardwareButtonManager.h>
+#include <Bounce2.h>
+#include <StepperController.h>
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper* stepper = NULL;
 
+HardwareButtonManager* hardwareButtonManager;
 WiFiManager* wifiManager;
 ShellyManager* shellyManager;
+StepperController* stepperController;
 
 void setup() {
   Serial.begin(115200);
@@ -23,23 +24,28 @@ void setup() {
   Serial.println("Connected to " + wifiManager->getWiFiSSID());
 
   shellyManager = new ShellyManager();
-  /*
-  engine.init();
-  stepper = engine.stepperConnectToPin(stepPinStepper);
-  if (stepper) {
-    stepper->setDirectionPin(dirPinStepper);
-    stepper->setEnablePin(enablePinStepper);
-    stepper->setAutoEnable(true);
-
-    stepper->setDelayToEnable(1000);
-    stepper->setDelayToDisable(1000);
-
-    stepper->setSpeedInHz(3200*5);  
-    stepper->setAcceleration(10000);
-    stepper->move(6000000);
-  }*/
+  hardwareButtonManager = new HardwareButtonManager(GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_19);
+  stepperController = new StepperController(engine);
 }
+
+void handleButtonRose(int i) {
+  if(stepperController->getCurrentPosition() == i) {
+    shellyManager->toggle();
+  } else {
+    stepperController->goToPosition(i);
+    shellyManager->turnOn();
+  }
+}
+
 
 void loop() {
   shellyManager->update();
+  hardwareButtonManager->tick();
+  for (int i = 0; i < 4; i++) {
+    if (hardwareButtonManager->posButtons[i]->rose()) {
+      handleButtonRose(i);
+    }
+  }
 }
+
+

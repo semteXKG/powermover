@@ -2,17 +2,17 @@
 #define stepper_controller
 
 #include <Arduino.h>
-#include <SharedData.h>
 #include <FastAccelStepper.h>
 #include <Constants.h>
 
 class StepperController {
 private:
     FastAccelStepper* stepper;
-    SharedData* sharedData;
+    int currentPos;
 public:
-    StepperController(SharedData* sharedData, FastAccelStepperEngine* engine, gpio_num_t pulsePin, gpio_num_t directionPin);
+    StepperController(FastAccelStepperEngine& engine);
     void goToPosition(int position);
+    int getCurrentPosition();
     void tick();
     ~StepperController();
 };

@@ -11,12 +11,17 @@ private:
     WiFiClient* net;
     PubSubClient* mqtt;
     String shellyId;
+    String commandTopic;
+    bool isOn = false;
     void connect();
     void callback(char* topic, byte* payload, unsigned int length);
     void handleAnnounce(StaticJsonDocument<1000>& doc);
+    void handleStatus(StaticJsonDocument<1000>& doc);
 public:
     void update();
-    void toggleShelly();
+    void toggle();
+    void turnOn();
+    void turnOff();
     ShellyManager(/* args */);
     ~ShellyManager();
 };

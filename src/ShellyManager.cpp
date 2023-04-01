@@ -16,27 +16,51 @@ void ShellyManager::callback(char* topic, byte* payload, unsigned int length) {
     Serial.print("Message arrived [");
     Serial.print(topic);
     Serial.print("] ");
+    String topStr = String(topic);
     StaticJsonDocument<1000> doc;
     deserializeJson(doc, payload, length);
     serializeJsonPretty(doc, Serial);
-    if (strcmp(topic, "shellies/announce") == 0) {
+    if (topStr.equals("shellies/announce")) {
         handleAnnounce(doc);
+    } else if (topStr.equals(this->shellyId + "/status/switch:0")) {
+        handleStatus(doc);
     }
 }
 
 void ShellyManager::handleAnnounce(StaticJsonDocument<1000>& doc) {
-    this->shellyId = doc["id"].as<String>();
-    Serial.println(this->shellyId);
+    shellyId = doc["id"].as<String>();
+    
     String sub = this->shellyId + "/status/switch:0";
-    String command = this->shellyId + "/command";
+    commandTopic = this->shellyId + "/command/switch:0";
+    
     Serial.println(sub);
-    Serial.println(command);
+    Serial.println(commandTopic);
+
     mqtt->subscribe(sub.c_str());
-    mqtt->publish(command.c_str(), "status_update");
+    mqtt->publish(commandTopic.c_str(), "status_update");
 }
 
-void ShellyManager::toggleShelly() {
-    
+void ShellyManager::handleStatus(StaticJsonDocument<1000>& doc) {
+    this->isOn = doc["output"];
+    Serial.println();
+    Serial.print("Current status is ");
+    Serial.println(this->isOn ? "ON": "OFF");
+}
+
+void ShellyManager::toggle() {
+    String newTargetState = isOn ? "off" : "on";
+    Serial.print("new target state: ");
+    Serial.println(newTargetState);
+    mqtt->publish(commandTopic.c_str(), newTargetState.c_str());
+}
+
+
+void ShellyManager::turnOn() {
+    mqtt->publish(commandTopic.c_str(), "on");
+}
+
+void ShellyManager::turnOff() {
+    mqtt->publish(commandTopic.c_str(), "off");
 }
 
 void ShellyManager::update() {
@@ -63,8 +87,6 @@ void ShellyManager::connect() {
             });
             
             mqtt->subscribe("shellies/announce");
-            //mqtt->subscribe("#");
-            mqtt->subscribe("shellyplus1-7c87ce63c878/status/switch:0");
             mqtt->publish("shellies/command", "announce");
         }
     }
