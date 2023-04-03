@@ -35,8 +35,9 @@ void handleButtonRose(int i) {
     stepperController->goToPosition(i);
     shellyManager->turnOn();
   }
+  Serial.print("Position of Stepper is: ");  
+  Serial.println(i);
 }
-
 
 void loop() {
   shellyManager->update();
@@ -45,6 +46,11 @@ void loop() {
     if (hardwareButtonManager->posButtons[i]->rose()) {
       handleButtonRose(i);
     }
+  }
+
+  int shellyButton = shellyManager->wasButtonPressed();
+  if (shellyButton != -1) {
+    handleButtonRose(shellyButton);
   }
 }
 

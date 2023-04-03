@@ -20,24 +20,29 @@ void ShellyManager::callback(char* topic, byte* payload, unsigned int length) {
     StaticJsonDocument<1000> doc;
     deserializeJson(doc, payload, length);
     serializeJsonPretty(doc, Serial);
-    if (topStr.equals("shellies/announce")) {
-        handleAnnounce(doc);
-    } else if (topStr.equals(this->shellyId + "/status/switch:0")) {
+    Serial.println();
+    if (topStr.equals(shellyRelais + "/status/switch:0")) {
         handleStatus(doc);
+    } else if (topStr.equals(shellyButtonSaw + "/input_event/0")) {
+        handleEvent(doc, 1);
+    } else if (topStr.equals(shellyButtonPlaner + "/input_event/0")) {
+        handleEvent(doc, 2);
     }
 }
 
-void ShellyManager::handleAnnounce(StaticJsonDocument<1000>& doc) {
-    shellyId = doc["id"].as<String>();
-    
-    String sub = this->shellyId + "/status/switch:0";
-    commandTopic = this->shellyId + "/command/switch:0";
-    
-    Serial.println(sub);
-    Serial.println(commandTopic);
+void ShellyManager::handleEvent(StaticJsonDocument<1000>& doc, int position) {
+    if (doc.containsKey("event")) {
+        String evnt = doc["event"];
+        if(evnt.equals("S")) {
+            buttonForPosPressed = position;
+        }
+    }
+}
 
-    mqtt->subscribe(sub.c_str());
-    mqtt->publish(commandTopic.c_str(), "status_update");
+int ShellyManager::wasButtonPressed() {
+    int tmp = buttonForPosPressed;
+    buttonForPosPressed = -1;
+    return tmp;
 }
 
 void ShellyManager::handleStatus(StaticJsonDocument<1000>& doc) {
@@ -51,16 +56,16 @@ void ShellyManager::toggle() {
     String newTargetState = isOn ? "off" : "on";
     Serial.print("new target state: ");
     Serial.println(newTargetState);
-    mqtt->publish(commandTopic.c_str(), newTargetState.c_str());
+    //mqtt->publish(commandTopic.c_str(), newTargetState.c_str());
 }
 
 
 void ShellyManager::turnOn() {
-    mqtt->publish(commandTopic.c_str(), "on");
+   // mqtt->publish(commandTopic.c_str(), "on");
 }
 
 void ShellyManager::turnOff() {
-    mqtt->publish(commandTopic.c_str(), "off");
+   // mqtt->publish(commandTopic.c_str(), "off");
 }
 
 void ShellyManager::update() {
@@ -87,6 +92,11 @@ void ShellyManager::connect() {
             });
             
             mqtt->subscribe("shellies/announce");
+            mqtt->subscribe((shellyRelais + String("/status/switch:0")).c_str());
+            mqtt->subscribe((shellyButtonPlaner + String("/input_event/0")).c_str());
+            mqtt->subscribe((shellyButtonSaw + String("/input_event/0")).c_str());
+            
+            this->commandTopic = shellyRelais + "/command/switch:0";
             mqtt->publish("shellies/command", "announce");
         }
     }
