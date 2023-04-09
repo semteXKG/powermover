@@ -56,16 +56,16 @@ void ShellyManager::toggle() {
     String newTargetState = isOn ? "off" : "on";
     Serial.print("new target state: ");
     Serial.println(newTargetState);
-    //mqtt->publish(commandTopic.c_str(), newTargetState.c_str());
+    mqtt->publish(commandTopic.c_str(), newTargetState.c_str());
 }
 
 
 void ShellyManager::turnOn() {
-   // mqtt->publish(commandTopic.c_str(), "on");
+   mqtt->publish(commandTopic.c_str(), "on");
 }
 
 void ShellyManager::turnOff() {
-   // mqtt->publish(commandTopic.c_str(), "off");
+   mqtt->publish(commandTopic.c_str(), "off");
 }
 
 void ShellyManager::update() {

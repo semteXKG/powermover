@@ -52,6 +52,7 @@ void loop() {
   if (shellyButton != -1) {
     handleButtonRose(shellyButton);
   }
+  delay(10);
 }
 
 
