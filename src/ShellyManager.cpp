@@ -24,9 +24,9 @@ void ShellyManager::callback(char* topic, byte* payload, unsigned int length) {
     if (topStr.equals(shellyRelais + "/status/switch:0")) {
         handleStatus(doc);
     } else if (topStr.equals(shellyButtonSaw + "/input_event/0")) {
-        handleEvent(doc, 1);
+        handleEvent(doc, 0);
     } else if (topStr.equals(shellyButtonPlaner + "/input_event/0")) {
-        handleEvent(doc, 2);
+        handleEvent(doc, 3);
     }
 }
 
@@ -97,6 +97,7 @@ void ShellyManager::connect() {
             mqtt->subscribe((shellyButtonSaw + String("/input_event/0")).c_str());
             
             this->commandTopic = shellyRelais + "/command/switch:0";
+            mqtt->publish(commandTopic.c_str(), "status_update");
             mqtt->publish("shellies/command", "announce");
         }
     }
