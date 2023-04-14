@@ -4,12 +4,14 @@
 #include <PubSubClient.h>
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
+#include <StepperController.h>
 
 class ShellyManager {
 private:
     long lastReconnectRetry = 0;
     WiFiClient* net;
     PubSubClient* mqtt;
+    StepperController* stepperController;
     String shellyRelais = String("shellyplus1-7c87ce63c878");
     String shellyButtonPlaner = String("shellies/shellybutton1-planer");
     String shellyButtonSaw = String("shellies/shellybutton1-saw");
@@ -27,7 +29,7 @@ public:
     void turnOn();
     void turnOff();
     int wasButtonPressed();
-    ShellyManager(/* args */);
+    ShellyManager(StepperController* stepperController);
     ~ShellyManager();
 };
 

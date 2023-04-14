@@ -15,11 +15,23 @@ void StepperController::goToPosition(int position) {
     if(posOffset == 0) {
         return;
     }
+    
+    stepper->enableOutputs();
+    delay(100);
+
     int steps = (TICKS_PER_ROT / (double)MM_PER_ROT) * (posOffset * DIST_BETWEEN_POS_MM);
     Serial.print("moving steps: ");
     Serial.println(steps);
     stepper->move(steps);
     currentPos = position;
+}
+
+void StepperController::setEnabled(boolean enabled) {
+    if (enabled) {
+        stepper->enableOutputs();
+    } else {
+        stepper->disableOutputs();
+    }
 }
 
 int StepperController::getCurrentPosition() {

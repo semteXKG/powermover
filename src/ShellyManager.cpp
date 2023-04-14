@@ -3,9 +3,10 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 
-ShellyManager::ShellyManager() {
+ShellyManager::ShellyManager(StepperController* stepperController) {
     this->net = new WiFiClient();  
     this->mqtt = new PubSubClient(IPAddress(10, 0, 0, 8), 1883, *this->net);  
+    this->stepperController = stepperController;
 }
 
 ShellyManager::~ShellyManager() {
@@ -50,6 +51,7 @@ void ShellyManager::handleStatus(StaticJsonDocument<1000>& doc) {
     Serial.println();
     Serial.print("Current status is ");
     Serial.println(this->isOn ? "ON": "OFF");
+    this->stepperController->setEnabled(isOn);
 }
 
 void ShellyManager::toggle() {

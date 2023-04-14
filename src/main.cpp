@@ -23,9 +23,9 @@ void setup() {
 
   Serial.println("Connected to " + wifiManager->getWiFiSSID());
 
-  shellyManager = new ShellyManager();
   hardwareButtonManager = new HardwareButtonManager(GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_19);
   stepperController = new StepperController(engine);
+  shellyManager = new ShellyManager(stepperController);
 }
 
 void handleButtonRose(int i) {

@@ -12,6 +12,7 @@ private:
 public:
     StepperController(FastAccelStepperEngine& engine);
     void goToPosition(int position);
+    void setEnabled(boolean enabled); 
     int getCurrentPosition();
     void tick();
     ~StepperController();
