@@ -27,6 +27,8 @@ void StepperController::goToPosition(int position) {
 }
 
 void StepperController::setEnabled(boolean enabled) {
+    Serial.print("Updating engine to ");
+    Serial.println(enabled);
     if (enabled) {
         stepper->enableOutputs();
     } else {

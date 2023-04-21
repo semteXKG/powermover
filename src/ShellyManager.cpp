@@ -25,7 +25,7 @@ void ShellyManager::callback(char* topic, byte* payload, unsigned int length) {
     if (topStr.equals(shellyRelais + "/status/switch:0")) {
         handleStatus(doc);
     } else if (topStr.equals(shellyButtonSaw + "/input_event/0")) {
-        handleEvent(doc, 0);
+        handleEvent(doc, 1);
     } else if (topStr.equals(shellyButtonPlaner + "/input_event/0")) {
         handleEvent(doc, 3);
     }
