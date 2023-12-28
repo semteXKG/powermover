@@ -1,10 +1,13 @@
 #include <Arduino.h>
-#include <WlanHandler.h>
 #include <FastAccelStepper.h>
 #include <ShellyManager.h>
 #include <HardwareButtonManager.h>
 #include <Bounce2.h>
 #include <StepperController.h>
+#include <WiFiManager.h>
+
+#define RETRY_COUNTER 10;
+#define DELAY_MS 10000
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper* stepper = NULL;
@@ -16,8 +19,19 @@ StepperController* stepperController;
 
 void setup() {
   Serial.begin(115200);
+
+  u_int retry = RETRY_COUNTER;
+
   wifiManager = new WiFiManager(Serial);
-  if(!wifiManager->autoConnect("Ad-Hoc")) {
+  while (retry > 0) {
+    if(!wifiManager->autoConnect("Suction-Ad-Hoc")) {
+      delay(DELAY_MS);
+      retry--;
+      Serial.println("Could not connect, back-off for 10s")
+    }  
+  }
+  
+  if(retry == 0) {
     wifiManager->startConfigPortal();
   }
 
