@@ -6,9 +6,6 @@
 #include <StepperController.h>
 #include <WiFiManager.h>
 
-#define RETRY_COUNTER 10;
-#define DELAY_MS 10000
-
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper* stepper = NULL;
 
@@ -16,25 +13,20 @@ HardwareButtonManager* hardwareButtonManager;
 WiFiManager* wifiManager;
 ShellyManager* shellyManager;
 StepperController* stepperController;
+int previousCheck = 0;
+
 
 void setup() {
   Serial.begin(115200);
-
-  u_int retry = RETRY_COUNTER;
-
   wifiManager = new WiFiManager(Serial);
-  while (retry > 0) {
-    if(!wifiManager->autoConnect("Suction-Ad-Hoc")) {
-      delay(DELAY_MS);
-      retry--;
-      Serial.println("Could not connect, back-off for 10s")
-    }  
-  }
-  
-  if(retry == 0) {
+  wifiManager->setWiFiAutoReconnect(true);
+  wifiManager->setConnectTimeout(180);
+  Serial.println("Connecting...");
+  if(!wifiManager->autoConnect("Suction-Ad-Hoc")) {
+    Serial.println("Could not connect, starting portal");
     wifiManager->startConfigPortal();
   }
-
+  
   Serial.println("Connected to " + wifiManager->getWiFiSSID());
 
   hardwareButtonManager = new HardwareButtonManager(GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_19);
@@ -66,6 +58,16 @@ void loop() {
   if (shellyButton != -1) {
     handleButtonRose(shellyButton);
   }
+
+  unsigned long currentMillis = millis();
+  // if WiFi is down, try reconnecting
+  if ((WiFi.status() != WL_CONNECTED) && (currentMillis - previousCheck >=5000)) {
+    Serial.println("Reconnecting to WiFi...");
+    WiFi.disconnect();
+    WiFi.reconnect();
+    previousCheck = currentMillis;
+  }
+
   delay(10);
 }
 

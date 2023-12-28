@@ -4,6 +4,7 @@ StepperController::StepperController(FastAccelStepperEngine& engine) {
     engine.init();
     stepper = engine.stepperConnectToPin(GPIO_NUM_27);
     stepper->setDirectionPin(GPIO_NUM_26);
+    stepper->setEnablePin(GPIO_NUM_25);
     stepper->setSpeedInHz(OP_SPEED);
     stepper->setAcceleration(10 * OP_SPEED);
     stepper->setCurrentPosition(0);  
